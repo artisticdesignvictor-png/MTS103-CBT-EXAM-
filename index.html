@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTS 103 CBT Exam</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
+  .screen { display: none; padding: 20px; max-width: 800px; margin: auto; }
+  #start-screen { display: block; text-align:center; padding-top:50px; }
+  h1 { color: #1e3c72; }
+  input[type=text] { padding: 10px; width: 70%; font-size: 16px; margin-bottom: 20px; }
+  button { padding: 10px 20px; font-size: 16px; cursor:pointer; background:#1e3c72; color:#fff; border:none; border-radius:5px; }
+  #timer { font-size: 18px; font-weight:bold; margin-bottom:20px; }
+  .yellow { color: #f39c12 !important; }
+  .red { color: #e74c3c !important; }
+  #progressBar { background:#ddd; border-radius:5px; overflow:hidden; margin-bottom:15px; height:10px; }
+  #progressFill { background:#1e3c72; width:0%; height:10px; transition:0.3s; }
+  #questionText { font-size:18px; margin-bottom:15px; }
+  .option { background:#fff; border:1px solid #ccc; padding:10px; margin-bottom:8px; cursor:pointer; border-radius:5px; transition:0.2s; }
+  .option:hover { background:#f0f0f0; }
+  .selected { background:#d1e7dd; border-color:#1e3c72; }
+  #result { text-align:center; }
+  .score.good { color:#27ae60; }
+  .score.average { color:#f1c40f; }
+  .score.poor { color:#e74c3c; }
+  #corrections { display:none; margin-top:20px; }
+  .corr-question { background:#fff; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; }
+  .corr-option.correct { background:#27ae60; color:#fff; }
+  .corr-option.wrong { background:#e74c3c; color:#fff; }
+  .corr-option.unanswered { background:#7f8c8d; color:#fff; }
+  footer { text-align:center; margin-top:30px; font-size:14px; color:#555; }
+</style>
+</head>
+<body>
+
+<div id="start-screen" class="screen">
+  <h1>MTS 103 CBT EXAM</h1>
+  <input type="text" id="candidateName" placeholder="Enter Full Name"><br>
+  <button id="startBtn">Start Exam</button>
+</div>
+
+<div id="quiz-screen" class="screen">
+  <div id="timer">15:00</div>
+  <div id="progressBar"><div id="progressFill"></div></div>
+  <div id="qNum"></div>
+  <div id="questionText"></div>
+  <div id="options"></div>
+  <button id="prevBtn">← Previous</button>
+  <button id="nextBtn">Next →</button>
+</div>
+
+<div id="result" class="screen">
+  <h1>Exam Result</h1>
+  <p>Candidate: <span id="resultName"></span></p>
+  <p>Score: <span id="scoreText"></span></p>
+  <p id="message"></p>
+  <p>Time Used: <span id="timeUsed"></span></p>
+  <button id="copyBtn">Copy Result</button>
+  <button id="viewCorrBtn">View Corrections</button>
+  <div id="corrections"></div>
+</div>
+
+<footer>
+Courtesy IBNSALAM INTER-CAMPUS TV (CEO OF THE FUNAAB LENS)
+</footer>
+
+<script>
+const questions = [
+  {q: "The distance between the points A(3,4) and B(6,8) is", opts:["A. 3","B. 5","C. 7","D. 10"], correct:1},
+  {q: "Which of the following polar points lies on the positive x-axis?", opts:["A. (4, pi/2)","B. (3,0)","C. (5, pi)","D. (6, 3pi/2)"], correct:1},
+  {q: "The polar coordinates equivalent to (-4, pi/3) with positive radius are", opts:["A. (4, pi/3)","B. (4, 4pi/3)","C. (4, -pi/3)","D. (-4, 4pi/3)"], correct:1},
+  {q: "Which of the following pairs of polar coordinates represent the same point?", opts:["A. (3, pi/6) and (3, 7pi/6)","B. (5, pi/4) and (-5, 5pi/4)","C. (4, pi/3) and (4, 2pi/3)","D. (6,0) and (6, pi)"], correct:1},
+  {q: "A point has equal x and y coordinates with the same sign. The point must lie on", opts:["A. x-axis","B. y-axis","C. line y = x","D. line y = -x"], correct:2},
+  {q: "If a point has equal x and y coordinates with opposite signs, it lies on", opts:["A. x-axis","B. line y = -x","C. line y = x","D. y-axis"], correct:1},
+  {q: "The six points A, B, C, D, E, F are equally spaced on a circle of radius 2 centered at the origin. If A is at (2,0), the polar coordinates of C are", opts:["A. (2, pi/6)","B. (2, pi/3)","C. (2, 2pi/3)","D. (2, 4pi/3)"], correct:3},
+  {q: "The midpoint of the diagonal joining the points A(2,4) and B(6,8) is", opts:["A. (4,6)","B. (3,5)","C. (5,7)","D. (6,6)"], correct:0},
+  {q: "Find the point of intersection of the lines x + y = 5 and x - y = 1", opts:["A. (1,4)","B. (3,2)","C. (2,3)","D. (4,1)"], correct:1},
+  {q: "The centre of the circle x^2 + y^2 - 4x + 6y + 4 = 0 is", opts:["A. (2,-3)","B. (-2,3)","C. (4,-6)","D. (0,0)"], correct:0},
+  {q: "The radius of the circle x^2 + y^2 - 4x + 6y + 4 = 0 is", opts:["A. 3","B. 4","C. 5","D. 6"], correct:0},
+  {q: "The number of points of intersection between the circle x^2 + y^2 = 25 and the line y = 3 is", opts:["A. 0","B. 1","C. 2","D. Infinite"], correct:2},
+  {q: "The equation x^2 + y^2 = 9 represents a", opts:["A. Circle","B. Straight line","C. Parabola","D. Ellipse"], correct:0},
+  {q: "The circle x^2 + y^2 = 16 intersects the locus y = x at how many points?", opts:["A. 0","B. 1","C. 2","D. 4"], correct:2},
+  {q: "Two circles intersect at right angles if", opts:["A. their radii are equal","B. distance between centers equals sum of radii","C. sum of squares of radii equals square of distance between centers","D. difference of radii equals distance between centers"], correct:2},
+  {q: "The length of the tangent from a point P(x1, y1) to the circle x^2 + y^2 + 2gx + 2fy + c = 0 is given by", opts:["A. sqrt(x1^2 + y1^2)","B. x1^2 + y1^2","C. sqrt(x1^2 + y1^2 + 2gx1 + 2fy1 + c)","D. g^2 + f^2"], correct:2},
+  {q: "The line x cos(theta) + y sin(theta) = p cuts the circle x^2 + y^2 = a^2 in the same two points for all theta. This statement is", opts:["A. False","B. True","C. Conditionally true","D. Indeterminate"], correct:1},
+  {q: "The equation of a circle with center (a, b) and radius r is", opts:["A. x^2 + y^2 = r^2","B. (x - a)^2 + (y - b)^2 = r^2","C. (x + a)^2 + (y + b)^2 = r^2","D. x^2 + y^2 + 2ax + 2by = 0"], correct:1},
+  {q: "If two circles touch externally, the distance between their centers is", opts:["A. difference of radii","B. square of radii","C. sum of radii","D. product of radii"], correct:2},
+  {q: "The equation y^2 = 4ax represents a", opts:["A. Circle","B. Parabola","C. Ellipse","D. Hyperbola"], correct:1},
+  {q: "The locus y = 3 represents a", opts:["A. Circle","B. Horizontal line","C. Vertical line","D. Parabola"], correct:1},
+  {q: "The polar angle corresponding to the point (-3, -4) lies in which quadrant?", opts:["A. I","B. II","C. III","D. IV"], correct:2},
+  {q: "The distance between the centers of the circles x^2 + y^2 = 9 and (x - 4)^2 + y^2 = 16 is", opts:["A. 3","B. 4","C. 5","D. 7"], correct:1},
+  {q: "If the discriminant of the quadratic obtained when solving a line and a circle is zero, the line is a", opts:["A. Chord","B. Secant","C. Tangent","D. Diameter"], correct:2},
+  {q: "The equation of the x-axis is", opts:["A. x=0","B. y=0","C. x+y=0","D. y=x"], correct:1},
+  {q: "The equation x^2 + y^2 = 289 represents a circle of radius", opts:["A. 17","B. 19","C. 289","D. 144.5"], correct:0},
+  {q: "The line joining the centers of two intersecting circles is", opts:["A. parallel to their common chord","B. perpendicular to their common chord","C. equal to their radii","D. tangent to both circles"], correct:1},
+  {q: "The equation of a circle touching both axes with center in the first quadrant is", opts:["A. x^2 + y^2 = r^2","B. (x - r)^2 + (y - r)^2 = r^2","C. (x + r)^2 + (y + r)^2 = r^2","D. x^2 + y^2 + 2r = 0"], correct:1},
+  {q: "If the tangents from a point to a circle are equal, the point lies", opts:["A. inside the circle","B. on the circle","C. outside the circle","D. at the center"], correct:2},
+  {q: "The locus of a point which moves such that its distance from a fixed point is constant is a", opts:["A. Straight line","B. Circle","C. Parabola","D. Ellipse"], correct:1}
+];
+
+// Shuffle questions
+questions.sort(()=>Math.random()-0.5);
+
+let userAnswers = new Array(questions.length).fill(-1);
+let current = 0;
+let timeLeft = 15*60; 
+let timerId;
+let candidate = "";
+
+const startScreen = document.getElementById("start-screen");
+const quizScreen = document.getElementById("quiz-screen");
+const resultScreen = document.getElementById("result");
+const correctionsDiv = document.getElementById("corrections");
+const viewCorrBtn = document.getElementById("viewCorrBtn");
+const timerEl = document.getElementById("timer");
+const progressFill = document.getElementById("progressFill");
+const qNum = document.getElementById("qNum");
+const questionText = document.getElementById("questionText");
+const optionsDiv = document.getElementById("options");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+document.getElementById("startBtn").onclick = () => {
+  candidate = document.getElementById("candidateName").value.trim();
+  if(!candidate){ alert("Please enter your full name to start the exam!"); return; }
+  startScreen.style.display="none";
+  quizScreen.style.display="block";
+  startTimer();
+  loadQuestion();
+};
+
+function startTimer(){
+  timerId=setInterval(()=>{
+    timeLeft--;
+    const min=Math.floor(timeLeft/60);
+    const sec=timeLeft%60;
+    timerEl.textContent=`${min}:${sec<10?"0":""}${sec}`;
+    timerEl.classList.remove("yellow","red");
+    if(timeLeft<=120) timerEl.classList.add("red");
+    else if(timeLeft<=300) timerEl.classList.add("yellow");
+    if(timeLeft<=0){ clearInterval(timerId); submitExam(); }
+  },1000);
+}
+
+function loadQuestion(){
+  const q=questions[current];
+  qNum.textContent=`Question ${current+1} of ${questions.length}`;
+  questionText.innerHTML=q.q;
+  optionsDiv.innerHTML="";
+  q.opts.forEach((opt,i)=>{
+    const div=document.createElement("div");
+    div.className="option";
+    div.innerHTML=opt;
+    if(userAnswers[current]===i) div.classList.add("selected");
+    div.onclick=()=>{ userAnswers[current]=i; optionsDiv.querySelectorAll(".option").forEach(el=>el.classList.remove("selected")); div.classList.add("selected"); };
+    optionsDiv.appendChild(div);
+  });
+  prevBtn.disabled=current===0;
+  nextBtn.textContent=current===questions.length-1?"Submit Exam":"Next →";
+  progressFill.style.width=((current+1)/questions.length)*100+"%";
+}
+
+prevBtn.onclick=()=>{ if(current>0){ current--; loadQuestion(); } };
+nextBtn.onclick=()=>{ if(current<questions.length-1){ current++; loadQuestion(); } else{ submitExam(); } };
+
+function submitExam(){
+  clearInterval(timerId);
+  quizScreen.style.display="none";
+  resultScreen.style.display="block";
+  let score=0;
+  userAnswers.forEach((ans,i)=>{ if(ans===questions[i].correct) score++; });
+  const percent=Math.round(score/questions.length*100);
+  const msg=percent>=70?"Outstanding Performance! 🌟":percent>=50?"Good Job! Keep Practicing 👍":"More Effort Needed 💪 You Can Do Better!";
+  document.getElementById("resultName").textContent=candidate;
+  document.getElementById("scoreText").textContent=`${score} / ${questions.length} (${percent}%)`;
+  document.getElementById("scoreText").className="score "+(percent>=70?"good":percent>=50?"average":"poor");
+  document.getElementById("message").textContent=msg;
+  const usedMin=Math.floor((15*60-timeLeft)/60);
+  const usedSec=(15*60-timeLeft)%60;
+  document.getElementById("timeUsed").textContent=`${usedMin} min ${usedSec} sec`;
+
+  document.getElementById("copyBtn").onclick=()=>{ 
+    const text=`MTS 103 CBT RESULT\n\nCandidate: ${candidate}\nScore: ${score}/${questions.length} (${percent}%)\nTime Used: ${usedMin} min ${usedSec} sec\n\n${msg}\n\nCourtesy IBNSALAM INTER-CAMPUS TV (CEO OF THE FUNAAB LENS)`; 
+    navigator.clipboard.writeText(text).then(()=>alert("Results copied to clipboard!")); 
+  };
+
+  viewCorrBtn.onclick=()=>{ 
+    if(correctionsDiv.style.display==="block"){ correctionsDiv.style.display="none"; viewCorrBtn.textContent="View Corrections"; }
+    else{ correctionsDiv.style.display="block"; viewCorrBtn.textContent="Hide Corrections"; showCorrections(); }
+  };
+}
+
+function showCorrections(){
+  correctionsDiv.innerHTML="<h2 style='text-align:center; color:#1e3c72; margin-bottom:20px;'>Detailed Corrections</h2>";
+  questions.forEach((q,i)=>{
+    const div=document.createElement("div"); div.className="corr-question"; 
+    div.innerHTML=`<strong>Question ${i+1}:</strong> ${q.q}`;
+    const optsDiv=document.createElement("div"); optsDiv.className="options";function showCorrections() {
+  correctionsDiv.innerHTML = "<h2 style='text-align:center; color:#1e3c72; margin-bottom:20px;'>Detailed Corrections</h2>";
+  questions.forEach((q, i) => {
+    const div = document.createElement("div");
+    div.className = "corr-question";
+    div.innerHTML = `<strong>Question ${i + 1}:</strong> ${q.q}`;
+
+    const optsDiv = document.createElement("div");
+    optsDiv.className = "options";
+
+    q.opts.forEach((opt, j) => {
+      const optDiv = document.createElement("div");
+      optDiv.className = "option corr-option";
+      optDiv.innerHTML = opt;
+
+      if (j === q.correct) optDiv.classList.add("correct"); // green
+      if (userAnswers[i] === j && j !== q.correct) optDiv.classList.add("wrong"); // red
+      if (userAnswers[i] === -1) optDiv.classList.add("unanswered"); // grey
+
+      optsDiv.appendChild(optDiv);
+    });
+
+    const status = userAnswers[i] === q.correct ? 
+      "<span style='color:#27ae60;font-weight:bold;'>Correct! ✅</span>" :
+      userAnswers[i] === -1 ? 
+      "<span style='color:#7f8c8d;'>Unanswered</span>" :
+      `<span style='color:#e74c3c;font-weight:bold;'>Incorrect ❌</span> (Correct: ${q.opts[q.correct]})`;
+
+    div.innerHTML += `<p style='margin-top:12px;'>${status}</p>`;
+    div.appendChild(optsDiv);
+    correctionsDiv.appendChild(div);
+  });
+
+  if (typeof MathJax !== "undefined" && MathJax.typesetPromise) {
+    MathJax.typesetPromise([correctionsDiv]).catch(() => {});
+  }
+}
